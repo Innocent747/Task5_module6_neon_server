@@ -24,10 +24,19 @@ class PrizeUseCase(
 
         seedMutex.withLock {
             if (prizeRepository.count() > 0) return
-            val prizes = nobelApiClient.fetchPrizes()
-            if (prizes.isNotEmpty()) {
-                prizeRepository.saveAll(prizes)
+            try {
+                val prizes = nobelApiClient.fetchPrizes()
+                if (prizes.isNotEmpty()) {
+                    prizeRepository.saveAll(prizes)
+                }
+            } catch (error: Exception) {
+                throw PrizeSeedException("Unable to fetch Nobel prizes from remote API", error)
             }
         }
     }
 }
+
+class PrizeSeedException(
+    message: String,
+    cause: Throwable? = null,
+) : RuntimeException(message, cause)

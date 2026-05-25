@@ -1,6 +1,8 @@
 package com.example.task5.presentation.routes
 
 import com.example.task5.presentation.dto.PrizeDto
+import com.example.task5.presentation.dto.MessageDto
+import com.example.task5.usecase.PrizeSeedException
 import com.example.task5.usecase.PrizeUseCase
 import io.ktor.http.HttpStatusCode
 import io.ktor.server.response.respond
@@ -19,7 +21,14 @@ fun Route.prizeRoutes(prizeUseCase: PrizeUseCase) {
             return@get
         }
 
-        val prizes = prizeUseCase.getPrizes(year, category, limit, offset)
+        val prizes = runCatching { prizeUseCase.getPrizes(year, category, limit, offset) }
+            .getOrElse { error ->
+                if (error is PrizeSeedException) {
+                    call.respond(HttpStatusCode.ServiceUnavailable, MessageDto(error.message ?: "Nobel API is unavailable"))
+                    return@get
+                }
+                throw error
+            }
             .map {
                 PrizeDto(
                     id = it.id,
