@@ -1,0 +1,39 @@
+@baseUrl = http://localhost:8080
+
+### Login (open)
+POST {{baseUrl}}/login
+Content-Type: application/json
+
+{
+  "username": "admin",
+  "password": "admin"
+}
+
+### Get prizes (open, auto-seed from Nobel API if DB empty)
+GET {{baseUrl}}/prizes?year=2023&category=physics&limit=10&offset=0
+
+###
+# @name login
+POST {{baseUrl}}/login
+Content-Type: application/json
+
+{
+  "username": "admin",
+  "password": "admin"
+}
+
+### Current user
+GET {{baseUrl}}/users/me
+Authorization: Bearer {{login.response.body.token}}
+
+### List favorites
+GET {{baseUrl}}/users/me/prizes
+Authorization: Bearer {{login.response.body.token}}
+
+### Add favorite (idempotent)
+POST {{baseUrl}}/users/me/prizes/1
+Authorization: Bearer {{login.response.body.token}}
+
+### Remove favorite
+DELETE {{baseUrl}}/users/me/prizes/1
+Authorization: Bearer {{login.response.body.token}}
